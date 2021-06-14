@@ -1,0 +1,22 @@
+package user
+
+import (
+	"time"
+
+	"github.com/afistapratama12/projectBackend/note"
+)
+
+type User struct {
+	UserID    string `gorm:"primaryKey"`
+	FirstName string
+	LastName  string
+	Photo     string // path profile
+	Username  string
+	Email     string
+	Password  string
+	Role      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time   `gorm:"index"`
+	Notes     []note.Note `gorm:"foreignKey:UserID"`
+}
