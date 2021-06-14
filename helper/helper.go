@@ -3,7 +3,7 @@ package helper
 import "github.com/afistapratama12/projectBackend/user"
 
 type userResponse struct {
-	ID        string `json:"id"`
+	UserID    string `json:"user_id"`
 	Username  string `json:"username"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
@@ -14,7 +14,7 @@ type userResponse struct {
 
 func APIUserResponse(user user.User, token string) *userResponse {
 	return &userResponse{
-		ID:        user.UserID,
+		UserID:    user.ID,
 		Username:  user.Username,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

@@ -1,7 +1,6 @@
 package note
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -171,7 +170,7 @@ func (s *service) UnDeleteNote(ID string) (interface{}, error) {
 		return nil, errors.New(errResponse)
 	}
 
-	dataDelete["deleted_at"] = sql.NullTime{}
+	dataDelete["deleted_at"] = nil
 
 	deleteNote, err := s.repository.Update(ID, dataDelete)
 

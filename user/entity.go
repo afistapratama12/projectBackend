@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	UserID    string `gorm:"primaryKey"`
+	ID        string `gorm:"primaryKey"`
 	FirstName string
 	LastName  string
 	Photo     string // path profile

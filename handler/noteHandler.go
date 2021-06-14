@@ -31,13 +31,13 @@ func (h *noteHandler) GetAllNote(c *gin.Context) {
 func (h *noteHandler) GetAllNoteByUser(c *gin.Context) {
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.UserID != "" || len(userLogin.UserID) <= 1 {
+	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
 	}
 
-	notes, err := h.service.GetByUserLogin(userLogin.UserID)
+	notes, err := h.service.GetByUserLogin(userLogin.ID)
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
@@ -68,13 +68,13 @@ func (h *noteHandler) SaveNewNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.UserID != "" || len(userLogin.UserID) <= 1 {
+	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
 	}
 
-	note, err := h.service.SaveNewNote(userLogin.UserID, inputNote)
+	note, err := h.service.SaveNewNote(userLogin.ID, inputNote)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -92,7 +92,7 @@ func (h *noteHandler) UpdateNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.UserID != "" || len(userLogin.UserID) <= 1 {
+	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
@@ -100,7 +100,7 @@ func (h *noteHandler) UpdateNote(c *gin.Context) {
 
 	checkNote, _ := h.service.GetByID(noteID)
 
-	if checkNote.UserID != userLogin.UserID || userLogin.Role != "admin" {
+	if checkNote.ID != userLogin.ID || userLogin.Role != "admin" {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
@@ -124,7 +124,7 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.UserID != "" || len(userLogin.UserID) <= 1 {
+	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
@@ -132,7 +132,7 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 
 	checkNote, _ := h.service.GetByID(noteID)
 
-	if checkNote.UserID != userLogin.UserID || userLogin.Role != "admin" {
+	if checkNote.ID != userLogin.ID || userLogin.Role != "admin" {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return

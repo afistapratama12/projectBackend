@@ -54,6 +54,8 @@ func SetupRouter() *gin.Engine {
 		port = ":8080"
 	}
 
+	r.Static("/images", "./images")
+
 	routeAPI := r.Group("/api")
 	{
 		routeAPI.POST("/register", userHandler.RegisterUser)
@@ -73,6 +75,15 @@ func SetupRouter() *gin.Engine {
 
 func main() {
 	router := SetupRouter()
+
+	// user, err := userService.GetByUsername("afistapratama")
+
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	return
+	// }
+
+	// fmt.Println(user)
 
 	router.Run(port)
 }

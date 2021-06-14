@@ -9,7 +9,7 @@ type UserRegister struct {
 }
 
 type UserLogin struct {
-	Username string `json:"usernmae"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password" binding:"required"`
 }

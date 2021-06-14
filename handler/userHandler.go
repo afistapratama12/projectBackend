@@ -22,14 +22,40 @@ func NewUserHandler(service user.Service, authService auth.Service) *userHandler
 
 func (h *userHandler) LoginUser(c *gin.Context) {
 	var input user.UserLogin
+	var checkUser user.User
+	var err error
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err = c.ShouldBindJSON(&input); err != nil {
 		errResponse := gin.H{"error": err.Error()}
 		c.JSON(400, errResponse)
 		return
 	}
 
-	user, err := h.service.GetByEmail(input.Email)
+	if len(input.Username) > 0 || input.Email == "" {
+		fmt.Println("masuk sini error")
+		checkUser, err = h.service.GetByUsername(input.Username)
+	}
+
+	if len(input.Email) > 0 || input.Username == "" {
+		checkUser, err = h.service.GetByEmail(input.Email)
+	}
+
+	if err != nil {
+		errResponse := gin.H{"error": "username / email and password invalid"}
+		c.JSON(400, errResponse)
+		return
+	}
+
+	if checkUser.ID == "" || len(checkUser.ID) <= 1 {
+		if err != nil {
+			errResponse := gin.H{"error": "username / email and password invalid"}
+			c.JSON(400, errResponse)
+			return
+		}
+		return
+	}
+
+	token, err := h.authService.GenerateToken(checkUser.ID)
 
 	if err != nil {
 		errResponse := gin.H{"error": err.Error()}
@@ -37,15 +63,7 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.GenerateToken(user.UserID)
-
-	if err != nil {
-		errResponse := gin.H{"error": err.Error()}
-		c.JSON(400, errResponse)
-		return
-	}
-
-	response := helper.APIUserResponse(user, token)
+	response := helper.APIUserResponse(checkUser, token)
 
 	c.JSON(200, response)
 }
@@ -87,7 +105,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.GenerateToken(user.UserID)
+	token, err := h.authService.GenerateToken(user.ID)
 
 	response := helper.APIUserResponse(user, token)
 

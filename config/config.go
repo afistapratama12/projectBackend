@@ -35,11 +35,8 @@ func Config() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	// err = db.AutoMigrate(&user.User{}, &password.Password{})
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// db.AutoMigrate(&user.User{})
+	// db.AutoMigrate(&note.Note{})
 
 	return db
 }

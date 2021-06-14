@@ -1,10 +1,15 @@
 package user
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	Create(user User) (User, error)
 	FindByEmail(email string) (User, error)
+	FindByUsername(username string) (User, error)
 	FindByID(ID string) (User, error)
 }
 
@@ -21,6 +26,17 @@ func (r *repository) Create(user User) (User, error) {
 		return user, err
 	}
 
+	return user, nil
+}
+
+func (r *repository) FindByUsername(username string) (User, error) {
+	var user User
+
+	fmt.Println("masuk repository findbyusername")
+
+	if err := r.db.Where("username = ?", username).Find(&user).Error; err != nil {
+		return user, err
+	}
 	return user, nil
 }
 
