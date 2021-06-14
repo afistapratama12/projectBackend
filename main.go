@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	DB *gorm.DB = config.Config()
+	port string
+	DB   *gorm.DB = config.Config()
 
 	userRepository = user.NewRepository(DB)
 	userService    = user.NewService(userRepository)
@@ -24,6 +25,8 @@ var (
 
 	userHandler = handler.NewUserHandler(userService, authService)
 	noteHandler = handler.NewNoteHandler(noteService)
+
+	middleware = handler.Middleware(userService, authService)
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -42,8 +45,7 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func main() {
-	var port string
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.Use(CORSMiddleware())
@@ -52,12 +54,25 @@ func main() {
 		port = ":8080"
 	}
 
-	r.POST("/api/register")
-	r.POST("/api/login")
+	routeAPI := r.Group("/api")
+	{
+		routeAPI.POST("/register", userHandler.RegisterUser)
+		routeAPI.POST("/login", userHandler.LoginUser)
 
-	r.GET("/notes")
-	r.POST("/notes")
-	r.GET("/notes/:note_id")
+		routeAPI.GET("/notes", noteHandler.GetAllNote)
+		routeAPI.GET("/users/notes", middleware, noteHandler.GetAllNoteByUser)
+		routeAPI.POST("/notes", middleware, noteHandler.SaveNewNote)
+		routeAPI.GET("/notes/:note_id", middleware, noteHandler.GetByIDNote)
+		routeAPI.PUT("/notes/:note_id", middleware, noteHandler.UpdateNote)
+		routeAPI.PATCH("/notes/:note_id", middleware, noteHandler.UnDeleteNote)
+		routeAPI.DELETE("/notes/:note_id", middleware, noteHandler.DeleteNote)
+	}
 
-	r.Run(port)
+	return r
+}
+
+func main() {
+	router := SetupRouter()
+
+	router.Run(port)
 }
