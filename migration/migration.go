@@ -16,18 +16,17 @@ type User struct {
 	Role          string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	DeletedAt     time.Time `gorm:"index"`
-	Notes         []Note    `gorm:"foreignKey:UserID"`
+	Notes         []Note `gorm:"foreignKey:UserID"`
 }
 
 type Note struct {
 	ID        string `gorm:"primaryKey"`
-	UserID    string
+	UserID    string `gorm:"index"`
 	Title     string
 	Body      string
 	Secret    string
 	Type      string
+	Deleted   bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Deleted   bool
 }

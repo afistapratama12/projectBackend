@@ -18,6 +18,5 @@ type User struct {
 	Role          string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	DeletedAt     time.Time   `gorm:"index"`
 	Notes         []note.Note `gorm:"foreignKey:UserID"`
 }
