@@ -60,6 +60,7 @@ func SetupRouter() *gin.Engine {
 	{
 		routeAPI.POST("/register", userHandler.RegisterUser)
 		routeAPI.POST("/login", userHandler.LoginUser)
+		routeAPI.POST("/email_confirmation/:confirmation_key", userHandler.VerificationEmailUser)
 
 		routeAPI.GET("/notes", noteHandler.GetAllNote)
 		routeAPI.GET("/users/notes", middleware, noteHandler.GetAllNoteByUser)

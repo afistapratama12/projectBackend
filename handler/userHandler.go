@@ -7,6 +7,7 @@ import (
 	"github.com/afistapratama12/projectBackend/auth"
 	"github.com/afistapratama12/projectBackend/helper"
 	"github.com/afistapratama12/projectBackend/user"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -32,7 +33,7 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 	}
 
 	if len(input.Username) > 0 || input.Email == "" {
-		fmt.Println("masuk sini error")
+		// fmt.Println("masuk sini error")
 		checkUser, err = h.service.GetByUsername(input.Username)
 	}
 
@@ -81,7 +82,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	generateUUID := uuid.New()
 
-	avatar, err := c.FormFile("avatar")
+	avatar, err := c.FormFile("photo")
 
 	if err != nil {
 		errResponse := gin.H{"error": err.Error()}
@@ -90,13 +91,6 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	}
 
 	path := fmt.Sprintf("images/avatar-%s=%s", generateUUID.String(), avatar.Filename)
-
-	err = c.SaveUploadedFile(avatar, path)
-	if err != nil {
-		errResponse := gin.H{"error": err.Error()}
-		c.JSON(500, errResponse)
-		return
-	}
 
 	user, err := h.service.Register(input, generateUUID.String(), path)
 	if err != nil {
@@ -107,7 +101,52 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	token, err := h.authService.GenerateToken(user.ID)
 
+	go h.service.SendEMailConfirmation(user.Email, token)
+
 	response := helper.APIUserResponse(user, token)
 
+	err = c.SaveUploadedFile(avatar, path)
+	if err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(500, errResponse)
+		return
+	}
+
 	c.JSON(201, response)
+}
+
+func (h *userHandler) VerificationEmailUser(c *gin.Context) {
+	confirmationKey := c.Params.ByName("confirmation_key")
+
+	token, err := h.authService.ValidateToken(confirmationKey)
+
+	if err != nil {
+		response := gin.H{"error": "confirmation key email not valid"}
+		c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	claim, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok || !token.Valid {
+		response := gin.H{"error": "confirmation key email not valid"}
+		c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	userID := claim["user_id"].(string)
+
+	fmt.Println(userID)
+
+	user, err := h.service.VerifiedEmailByUserID(userID)
+
+	if err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(500, errResponse)
+		return
+	}
+
+	response := helper.ResponseVerification(user)
+
+	c.JSON(200, response)
 }

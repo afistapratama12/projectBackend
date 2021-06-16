@@ -2,12 +2,15 @@ package auth
 
 import (
 	"errors"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 )
 
 var (
-	key = "rahasia-project-backend"
+	err = godotenv.Load()
+	key = os.Getenv("AUTH_KEY")
 )
 
 type Service interface {

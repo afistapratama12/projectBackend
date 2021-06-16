@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -52,6 +53,8 @@ func Middleware(userService user.Service, authService auth.Service) gin.HandlerF
 		}
 
 		userID := claim["user_id"].(string)
+
+		fmt.Println(userID)
 
 		user, err := userService.GetByID(userID)
 

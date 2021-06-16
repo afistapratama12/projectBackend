@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/afistapratama12/projectBackend/helper"
 	"github.com/afistapratama12/projectBackend/note"
 	"github.com/afistapratama12/projectBackend/user"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type noteHandler struct {
@@ -31,7 +34,9 @@ func (h *noteHandler) GetAllNote(c *gin.Context) {
 func (h *noteHandler) GetAllNoteByUser(c *gin.Context) {
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
+	// fmt.Println("line 36 notehandler ", userLogin)
+
+	if userLogin.ID == "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
@@ -68,13 +73,22 @@ func (h *noteHandler) SaveNewNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
+	if userLogin.ID == "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return
 	}
 
-	note, err := h.service.SaveNewNote(userLogin.ID, inputNote)
+	if err := c.ShouldBindJSON(&inputNote); err != nil {
+		c.JSON(400, gin.H{"errors": err.Error()})
+		return
+	}
+
+	fmt.Println(inputNote)
+
+	noteID := uuid.New()
+
+	note, err := h.service.SaveNewNote(noteID.String(), userLogin.ID, inputNote)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -92,9 +106,14 @@ func (h *noteHandler) UpdateNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
+	if userLogin.ID == "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
+		return
+	}
+
+	if err := c.ShouldBindJSON(&updateInput); err != nil {
+		c.JSON(400, gin.H{"errors": err.Error()})
 		return
 	}
 
@@ -124,7 +143,7 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 
 	userLogin := c.MustGet("currentUser").(user.User)
 
-	if userLogin.ID != "" || len(userLogin.ID) <= 1 {
+	if userLogin.ID == "" || len(userLogin.ID) <= 1 {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
 		return

@@ -10,7 +10,7 @@ type Service interface {
 	GetAll() ([]Note, error)
 	GetByUserLogin(userID string) ([]Note, error)
 	GetByID(ID string) (Note, error)
-	SaveNewNote(userID string, input NoteInput) (Note, error)
+	SaveNewNote(noteID string, userID string, input NoteInput) (Note, error)
 	UpdateNote(ID string, dataUpdate NoteUpdateInput) (Note, error)
 	DeleteNote(ID string) (interface{}, error)
 	UnDeleteNote(ID string) (interface{}, error)
@@ -65,9 +65,10 @@ func (s *service) GetByID(ID string) (Note, error) {
 	return note, nil
 }
 
-func (s *service) SaveNewNote(userID string, input NoteInput) (Note, error) {
+func (s *service) SaveNewNote(noteID string, userID string, input NoteInput) (Note, error) {
 
 	var newNote = Note{
+		ID:        noteID,
 		UserID:    userID,
 		Title:     input.Title,
 		Body:      input.Body,
@@ -145,7 +146,7 @@ func (s *service) DeleteNote(ID string) (interface{}, error) {
 		return nil, errors.New(errResponse)
 	}
 
-	dataDelete["deleted_at"] = time.Now()
+	dataDelete["deleted"] = true
 
 	deleteNote, err := s.repository.Update(ID, dataDelete)
 
@@ -170,7 +171,7 @@ func (s *service) UnDeleteNote(ID string) (interface{}, error) {
 		return nil, errors.New(errResponse)
 	}
 
-	dataDelete["deleted_at"] = nil
+	dataDelete["deleted"] = false
 
 	deleteNote, err := s.repository.Update(ID, dataDelete)
 
