@@ -5,8 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/afistapratama12/projectBackend/note"
-	"github.com/afistapratama12/projectBackend/user"
+	"github.com/afistapratama12/projectBackend/migration"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -37,8 +36,10 @@ func Config() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&user.User{})
-	db.AutoMigrate(&note.Note{})
+	err = db.AutoMigrate(&migration.Note{}, &migration.User{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return db
 }
