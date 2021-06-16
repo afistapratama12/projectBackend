@@ -139,6 +139,8 @@ func (h *noteHandler) UpdateNote(c *gin.Context) {
 }
 
 func (h *noteHandler) DeleteNote(c *gin.Context) {
+	var delInput note.NoteDeleteInput
+
 	var noteID = c.Params.ByName("note_id")
 
 	userLogin := c.MustGet("currentUser").(user.User)
@@ -149,11 +151,21 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 		return
 	}
 
+	if err := c.ShouldBindJSON(&delInput); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	checkNote, _ := h.service.GetByID(noteID)
 
-	if checkNote.ID != userLogin.ID || userLogin.Role != "admin" {
+	if checkNote.UserID != userLogin.ID || userLogin.Role != "admin" {
 		errResponse := gin.H{"error": "unauthorize user"}
 		c.JSON(401, errResponse)
+		return
+	}
+
+	if checkNote.Secret != delInput.Secret {
+		c.JSON(400, gin.H{"error": "secret note invalid, cannot delete note"})
 		return
 	}
 

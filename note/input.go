@@ -13,3 +13,7 @@ type NoteUpdateInput struct {
 	Secret string `json:"secret"`
 	Type   string `json:"type"`
 }
+
+type NoteDeleteInput struct {
+	Secret string `json:"secret"`
+}

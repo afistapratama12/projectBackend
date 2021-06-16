@@ -169,14 +169,14 @@ func (s *service) VerifiedEmailByUserID(userID string) (User, error) {
 // }
 
 func (s *service) SendEMailConfirmation(email string, confirmationKey string) {
-	sendLink := fmt.Sprintf(`<p>or click link here</p><form action="http://localhost:8080/api/email_confirmation/%s" method="post"><button type="submit"> confirmation email </button></form>`, confirmationKey)
+	sendLink := fmt.Sprintf(`<p>Or you cna click link here for confirmation :</p><form action="http://localhost:8080/api/email_confirmation/%s" method="post"><button type="submit"> confirmation email </button></form>`, confirmationKey)
 	sendBody := fmt.Sprintf("<h4>Thank you for registration to out application</h4><p>this is email confirmation key : %s </p> %s <p>have a nice day</p>", confirmationKey, sendLink)
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_SENDER_NAME)
 	mailer.SetHeader("To", email)
 	mailer.SetAddressHeader("Cc", "pratama.1208979@gmail.com", "pratama")
-	mailer.SetHeader("Subject", "Test mail")
+	mailer.SetHeader("Subject", "Email Confirmation")
 	mailer.SetBody("text/html", sendBody)
 	// mailer.Attach("./sample.png")
 
