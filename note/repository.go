@@ -21,7 +21,7 @@ func NewRepository(db *gorm.DB) *repository {
 func (r *repository) FindAll() ([]Note, error) {
 	var notes []Note
 
-	if err := r.db.Find(&notes).Error; err != nil {
+	if err := r.db.Where("deleted = ?", "0").Find(&notes).Error; err != nil {
 		return notes, err
 	}
 
@@ -31,7 +31,7 @@ func (r *repository) FindAll() ([]Note, error) {
 func (r *repository) FindAllByUser(userID string) ([]Note, error) {
 	var notes []Note
 
-	if err := r.db.Where("user_id = ?", userID).Find(&notes).Error; err != nil {
+	if err := r.db.Where("user_id = ? AND deleted = ?", userID, "0").Find(&notes).Error; err != nil {
 		return notes, err
 	}
 
