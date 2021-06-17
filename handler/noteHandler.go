@@ -158,26 +158,27 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 
 	checkNote, _ := h.service.GetByID(noteID)
 
-	if checkNote.UserID != userLogin.ID || userLogin.Role != "admin" {
-		errResponse := gin.H{"error": "unauthorize user"}
-		c.JSON(401, errResponse)
+	// masih terjadi error disini untuk verification
+	if checkNote.UserID == userLogin.ID || userLogin.Role == "admin" {
+		if checkNote.Secret != delInput.Secret {
+			c.JSON(400, gin.H{"error": "secret note invalid, cannot delete note"})
+			return
+		}
+
+		deleteMsg, err := h.service.DeleteNote(noteID)
+
+		if err != nil {
+			errResponse := gin.H{"error": err.Error()}
+			c.JSON(500, errResponse)
+			return
+		}
+
+		c.JSON(200, gin.H{"message": deleteMsg.(string)})
 		return
 	}
 
-	if checkNote.Secret != delInput.Secret {
-		c.JSON(400, gin.H{"error": "secret note invalid, cannot delete note"})
-		return
-	}
-
-	deleteMsg, err := h.service.DeleteNote(noteID)
-
-	if err != nil {
-		errResponse := gin.H{"error": err.Error()}
-		c.JSON(500, errResponse)
-		return
-	}
-
-	c.JSON(200, gin.H{"message": deleteMsg.(string)})
+	errResponse := gin.H{"error": "unauthorize user"}
+	c.JSON(401, errResponse)
 }
 
 func (h *noteHandler) UnDeleteNote(c *gin.Context) {
