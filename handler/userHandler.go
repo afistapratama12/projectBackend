@@ -56,6 +56,12 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
+	if checkUser.VerifiedEmail == false {
+		errResponse := gin.H{"error": "please verified email for login"}
+		c.JSON(401, errResponse)
+		return
+	}
+
 	token, err := h.authService.GenerateToken(checkUser.ID)
 
 	if err != nil {
