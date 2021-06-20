@@ -109,7 +109,53 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	go h.service.SendEMailConfirmation(user.Email, token)
 
-	response := helper.APIUserResponse(user, token)
+	response := helper.ResponseRegister(user)
+
+	err = c.SaveUploadedFile(avatar, path)
+	if err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(500, errResponse)
+		return
+	}
+
+	c.JSON(201, response)
+}
+
+func (h *userHandler) RegisterAdmin(c *gin.Context) {
+	var input user.UserRegister
+
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 10*1024*1024)
+
+	if err := c.ShouldBind(&input); err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(400, errResponse)
+		return
+	}
+
+	generateUUID := uuid.New()
+
+	avatar, err := c.FormFile("photo")
+
+	if err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(400, errResponse)
+		return
+	}
+
+	path := fmt.Sprintf("images/avatar-%s=%s", generateUUID.String(), avatar.Filename)
+
+	user, err := h.service.RegisterAdmin(input, generateUUID.String(), path)
+	if err != nil {
+		errResponse := gin.H{"error": err.Error()}
+		c.JSON(500, errResponse)
+		return
+	}
+
+	token, err := h.authService.GenerateToken(user.ID)
+
+	go h.service.SendEMailConfirmation(user.Email, token)
+
+	response := helper.ResponseRegister(user)
 
 	err = c.SaveUploadedFile(avatar, path)
 	if err != nil {

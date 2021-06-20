@@ -34,3 +34,11 @@ func ResponseVerification(user user.User) gin.H {
 		"message":  "user email verification successfull",
 	}
 }
+
+func ResponseRegister(user user.User) gin.H {
+	return gin.H{
+		"username": user.Username,
+		"email":    user.Email,
+		"message":  "please verified email before login",
+	}
+}

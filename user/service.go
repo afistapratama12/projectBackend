@@ -27,6 +27,7 @@ type Service interface {
 	GetByID(userID string) (User, error)
 	GetByEmail(email string) (User, error)
 	Register(input UserRegister, uuid string, avatarPath string) (User, error)
+	RegisterAdmin(input UserRegister, uuid string, avatarPath string) (User, error)
 	GetByUsername(username string) (User, error)
 	// sendMail(to []string, cc []string, subject, message string) error
 	SendEMailConfirmation(email string, confirmationKey string)
@@ -113,6 +114,48 @@ func (s *service) Register(input UserRegister, uuid string, avatarPath string) (
 		VerifiedEmail: false,
 		Password:      string(genPassword),
 		Role:          "user",
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	user, err := s.repository.Create(newUser)
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (s *service) RegisterAdmin(input UserRegister, uuid string, avatarPath string) (User, error) {
+	checkEmailUser, err := s.repository.FindByEmail(input.Email)
+
+	if checkEmailUser.ID != "" || len(checkEmailUser.ID) > 1 {
+		return User{}, errors.New("email has been registered")
+	}
+
+	checkUsernameUser, err := s.repository.FindByEmail(input.Username)
+
+	if checkUsernameUser.ID != "" || len(checkUsernameUser.ID) > 1 {
+		return User{}, errors.New("username has been registered")
+	}
+
+	if err != nil {
+		return User{}, err
+	}
+
+	genPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+
+	var newUser = User{
+		ID:            uuid,
+		FirstName:     input.FirstName,
+		LastName:      input.LastName,
+		Photo:         avatarPath,
+		Username:      input.Username,
+		Email:         input.Email,
+		VerifiedEmail: false,
+		Password:      string(genPassword),
+		Role:          "admin",
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}

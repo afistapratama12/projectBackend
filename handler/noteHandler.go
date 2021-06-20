@@ -119,23 +119,45 @@ func (h *noteHandler) UpdateNote(c *gin.Context) {
 
 	checkNote, _ := h.service.GetByID(noteID)
 
-	if checkNote.ID != userLogin.ID || userLogin.Role != "admin" {
-		errResponse := gin.H{"error": "unauthorize user"}
-		c.JSON(401, errResponse)
+	if checkNote.UserID == userLogin.ID {
+		if checkNote.Secret != updateInput.Secret {
+			c.JSON(400, gin.H{"error": "secret note invalid, cannot update note note"})
+			return
+		}
+
+		note, err := h.service.UpdateNote(noteID, updateInput)
+
+		if err != nil {
+			errResponse := gin.H{"error": err.Error()}
+			c.JSON(500, errResponse)
+			return
+		}
+
+		formatter := helper.FormatNote(note)
+
+		c.JSON(200, formatter)
+
 		return
 	}
 
-	note, err := h.service.UpdateNote(noteID, updateInput)
+	if userLogin.Role == "admin" {
+		note, err := h.service.UpdateNote(noteID, updateInput)
 
-	if err != nil {
-		errResponse := gin.H{"error": err.Error()}
-		c.JSON(500, errResponse)
+		if err != nil {
+			errResponse := gin.H{"error": err.Error()}
+			c.JSON(500, errResponse)
+			return
+		}
+
+		formatter := helper.FormatNote(note)
+
+		c.JSON(200, formatter)
+
 		return
 	}
 
-	formatter := helper.FormatNote(note)
-
-	c.JSON(200, formatter)
+	errResponse := gin.H{"error": "unauthorize user"}
+	c.JSON(401, errResponse)
 }
 
 func (h *noteHandler) DeleteNote(c *gin.Context) {
@@ -159,12 +181,25 @@ func (h *noteHandler) DeleteNote(c *gin.Context) {
 	checkNote, _ := h.service.GetByID(noteID)
 
 	// masih terjadi error disini untuk verification
-	if checkNote.UserID == userLogin.ID || userLogin.Role == "admin" {
+	if checkNote.UserID == userLogin.ID {
 		if checkNote.Secret != delInput.Secret {
 			c.JSON(400, gin.H{"error": "secret note invalid, cannot delete note"})
 			return
 		}
 
+		deleteMsg, err := h.service.DeleteNote(noteID)
+
+		if err != nil {
+			errResponse := gin.H{"error": err.Error()}
+			c.JSON(500, errResponse)
+			return
+		}
+
+		c.JSON(200, gin.H{"message": deleteMsg.(string)})
+		return
+	}
+
+	if userLogin.Role == "admin" {
 		deleteMsg, err := h.service.DeleteNote(noteID)
 
 		if err != nil {
